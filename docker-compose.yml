@@ -1,0 +1,9 @@
+services:
+  cv:
+    build: .
+    image: damianocatasta-cv:latest
+    container_name: damianocatasta-cv
+    restart: unless-stopped
+    ports:
+      # host:container — cambia 8080 con la porta che preferisci esporre
+      - "8080:80"

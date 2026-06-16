@@ -1,0 +1,6 @@
+original-site.html
+*.md
+.git
+.gitignore
+.dockerignore
+docker-compose.yml

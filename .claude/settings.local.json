@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head -c 8000 /tmp/site.html)",
+      "Bash(grep -v \"^$\")",
+      "Bash(PYTHONUTF8=1 python -c ' *)",
+      "Bash(docker version *)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
