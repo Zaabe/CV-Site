@@ -5,7 +5,9 @@
       "Bash(grep -v \"^$\")",
       "Bash(PYTHONUTF8=1 python -c ' *)",
       "Bash(docker version *)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s -o /dev/null -w \"CV: %{http_code} \\(%{size_download} bytes\\)\\\\n\" \"http://localhost:8123/assets/CV%20Damiano%20Catasta%20NEW.pdf\")",
+      "Bash(curl -s -o /dev/null -w \"Tesi: %{http_code} \\(%{size_download} bytes\\)\\\\n\" \"http://localhost:8123/assets/SB_1994185_catasta_elaborato.pdf\")"
     ]
   }
 }
