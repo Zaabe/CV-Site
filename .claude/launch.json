@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8123", "--directory", "site"],
       "port": 8123
+    },
+    {
+      "name": "inventory-preview",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--port", "8099", "--app-dir", "C:\\Users\\Damiano\\Desktop\\inventory"],
+      "port": 8099
     }
   ]
 }
