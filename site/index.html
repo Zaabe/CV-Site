@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Damiano Catasta — Biotecnologie Farmaceutiche</title>
-<meta name="description" content="Curriculum di Damiano Catasta, Dottore in Scienze Biologiche e studente di Biotecnologie Farmaceutiche alla Sapienza di Roma. R&D, Quality Assurance e Controllo Qualità in ambito farmaceutico.">
+<meta name="description" content="Curriculum di Damiano Catasta, Dottore in Scienze Biologiche e studente di Biotecnologie Farmaceutiche alla Sapienza di Roma. In cerca di tirocinio per tesi in ambito farmaceutico: R&D, Quality Control e Quality Assurance.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -171,9 +171,8 @@
   }
   .hero .role {
     font-size: clamp(17px, 2.4vw, 21px); color: var(--text); font-weight: 500;
-    margin-bottom: 10px;
+    margin-bottom: 18px;
   }
-  .hero .lede { font-size: 16px; color: var(--muted); max-width: 540px; margin-bottom: 26px; }
   .hero .loc {
     display: inline-flex; align-items: center; gap: 7px;
     font-size: 14px; color: var(--faint); margin-bottom: 28px;
@@ -222,7 +221,7 @@
   .dna .nascent { stroke: var(--secondary); stroke-width: 2; stroke-dasharray: 4 6; }
 
   /* ── SECTIONS ── */
-  section { padding: 64px 0; scroll-margin-top: 70px; }
+  section { padding: 32px 0; scroll-margin-top: 70px; }
   .sec-head { margin-bottom: 38px; }
   .sec-num {
     font-family: 'JetBrains Mono', monospace; font-size: 12px;
@@ -273,7 +272,7 @@
     white-space: nowrap; padding-top: 3px; flex-shrink: 0;
   }
   .tl-body { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s ease, opacity 0.3s, margin 0.3s; }
-  .tl.open .tl-body { max-height: 240px; opacity: 1; margin-top: 12px; }
+  .tl.open .tl-body { max-height: 460px; opacity: 1; margin-top: 12px; }
   .tl-desc { font-size: 14px; line-height: 1.7; color: var(--muted); }
   .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
   .tag {
@@ -302,18 +301,60 @@
     background: var(--primary-soft); display: grid; place-items: center; font-size: 18px;
   }
   .skill-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; }
-  .skill-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; min-height: 34px; }
-  .dots { display: flex; gap: 5px; }
-  .dots i {
-    width: 100%; height: 5px; border-radius: 3px; background: var(--border-strong); flex: 1;
-  }
-  .dots i.on { background: var(--grad); }
-
+  .skill-sub { font-size: 12.5px; color: var(--muted); min-height: 34px; }
   .subhead {
     font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px;
     margin: 36px 0 16px; display: flex; align-items: center; gap: 10px;
   }
   .subhead::before { content: ''; width: 18px; height: 2px; background: var(--grad); }
+
+  /* Subhead comprimibile (accordion) */
+  .subhead.acc { cursor: pointer; user-select: none; margin: 30px 0 14px; transition: color 0.2s; }
+  .subhead.acc.collapsed { margin-bottom: 0; }
+  .subhead.acc:hover { color: var(--primary); }
+  .subhead.acc:hover .acc-ic { transform: scale(1.12); }
+  .subhead.acc::before { display: none; }
+  .acc-ic {
+    position: relative; width: 18px; height: 2px; flex-shrink: 0;
+    border-radius: 2px; background: var(--grad);
+    transition: transform 0.3s cubic-bezier(0.34, 1.45, 0.5, 1);
+  }
+  .acc-ic::after {
+    content: ''; position: absolute; left: 8px; top: -8px;
+    width: 2px; height: 18px; border-radius: 2px; background: var(--grad);
+    opacity: 0; transform: rotate(90deg) scaleY(0.4);
+    transition: opacity 0.28s ease, transform 0.4s cubic-bezier(0.34, 1.45, 0.5, 1);
+  }
+  .subhead.acc.collapsed .acc-ic::after,
+  .subhead.acc.closing .acc-ic::after { opacity: 1; transform: rotate(0deg) scaleY(1); }
+  .subhead.acc:focus-visible { outline: none; color: var(--primary); }
+  .subhead.acc.collapsed + .acc-panel { display: none; }
+
+  /* apertura: le card entrano una dopo l'altra */
+  .acc-panel > * { animation: accItem 0.45s cubic-bezier(0.2, 1.25, 0.4, 1) backwards; }
+  .acc-panel > *:nth-child(2) { animation-delay: 0.055s; }
+  .acc-panel > *:nth-child(3) { animation-delay: 0.11s; }
+  .acc-panel > *:nth-child(4) { animation-delay: 0.165s; }
+  .acc-panel > *:nth-child(5) { animation-delay: 0.22s; }
+  .acc-panel > *:nth-child(n+6) { animation-delay: 0.275s; }
+  @keyframes accItem {
+    from { opacity: 0; transform: translateY(18px) scale(0.94); }
+    60%  { opacity: 1; }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* chiusura: le card escono in sequenza, dall'ultima alla prima */
+  .acc-panel.closing > * { animation: accItemOut 0.28s cubic-bezier(0.45, 0, 0.7, 0.25) forwards; }
+  .acc-panel.closing > *:nth-last-child(1) { animation-delay: 0s; }
+  .acc-panel.closing > *:nth-last-child(2) { animation-delay: 0.04s; }
+  .acc-panel.closing > *:nth-last-child(3) { animation-delay: 0.08s; }
+  .acc-panel.closing > *:nth-last-child(4) { animation-delay: 0.12s; }
+  .acc-panel.closing > *:nth-last-child(5) { animation-delay: 0.16s; }
+  .acc-panel.closing > *:nth-last-child(n+6) { animation-delay: 0.2s; }
+  @keyframes accItemOut {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateY(-10px) scale(0.96); }
+  }
 
   .lang-row { display: flex; flex-wrap: wrap; gap: 14px; }
   .lang {
@@ -321,7 +362,13 @@
     border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 14px;
     backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
   }
-  .lang .flag { font-size: 30px; }
+  .lang .flag {
+    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+    background: var(--primary-soft); color: var(--primary);
+    display: grid; place-items: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500;
+    letter-spacing: 0.03em;
+  }
   .lang .l-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; }
   .lang .l-lvl { font-size: 13px; color: var(--muted); }
   .lang .bars { margin-left: auto; display: flex; gap: 4px; }
@@ -369,6 +416,14 @@
   .reveal.in { opacity: 1; transform: none; }
 
   /* Responsive */
+  /* larghezze intermedie: la nav con 6 voci starebbe stretta e il brand andrebbe a capo */
+  @media (max-width: 880px) {
+    .nav-in { gap: 12px; }
+    .brand { white-space: nowrap; font-size: 15px; }
+    .nav-links { gap: 16px; }
+    .nav-links a { font-size: 12px; }
+  }
+
   @media (max-width: 720px) {
     .hero { padding: 110px 0 50px; }
     .hero-grid { grid-template-columns: 1fr; gap: 28px; }
@@ -393,6 +448,11 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; scroll-behavior: auto; }
     .reveal { opacity: 1; transform: none; }
+    /* niente movimento, ma apertura e chiusura restano percepibili in dissolvenza */
+    .acc-panel > * { animation: accFade 0.3s ease backwards !important; }
+    .acc-panel.closing > * { animation: accFadeOut 0.22s ease forwards !important; }
+    @keyframes accFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes accFadeOut { from { opacity: 1; } to { opacity: 0; } }
   }
 </style>
 </head>
@@ -405,8 +465,9 @@
     <ul class="nav-links" id="navlinks">
       <li><a href="#about">Profilo</a></li>
       <li><a href="#education">Formazione</a></li>
-      <li><a href="#experience">Esperienza</a></li>
+      <li><a href="#experience">Carriera</a></li>
       <li><a href="#skills">Competenze</a></li>
+      <li><a href="#interests">Interessi</a></li>
       <li><a href="#contact">Contatti</a></li>
     </ul>
     <div style="display:flex; gap:10px; align-items:center;">
@@ -425,14 +486,13 @@
     <div class="hero-grid">
       <div>
         <h1>Damiano <span class="grad">Catasta</span></h1>
-        <p class="role">Dottore in Scienze Biologiche · Studente di Biotecnologie Farmaceutiche</p>
-        <p class="lede">Università degli Studi di Roma “La Sapienza”. Focus su Ricerca &amp; Sviluppo, Controllo Qualità e Quality Assurance in ambito farmaceutico.</p>
+        <p class="role">Dottore in Scienze Biologiche</p>
         <p class="loc">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Roma, Italia
+          Roma, Lazio · automunito (patente B), disponibile nel Lazio
         </p>
         <div class="cta-row">
-          <a class="btn btn-primary" href="assets/CV%20Damiano%20Catasta%20NEW.pdf" target="_blank" rel="noopener">
+          <a class="btn btn-primary" href="assets/CV%20Damiano%20Catasta%202026.pdf" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             Scarica il CV
           </a>
@@ -446,6 +506,7 @@
           <span class="chip">💊 Pharma R&amp;D</span>
           <span class="chip">✅ Quality Assurance</span>
           <span class="chip">🧬 Biotecnologie</span>
+          <span class="chip">🧫 Regulatory Affairs</span>
         </div>
       </div>
       <div class="avatar-wrap">
@@ -462,11 +523,12 @@
       <h2 class="sec-title">Profilo</h2>
     </div>
     <div class="about-card reveal">
-      Laureato in <strong>Scienze Biologiche</strong>, attualmente studente di
-      <strong>Biotecnologie Farmaceutiche</strong> all'Università “La Sapienza” di Roma.
-      In cerca di esperienze formative e professionali in ambito farmaceutico, con particolare
-      interesse verso la <span class="hl">Ricerca &amp; Sviluppo (R&amp;D)</span>,
-      il <span class="hl">Controllo Qualità (QC)</span> e la <span class="hl">Quality Assurance (QA)</span>.
+      <strong>Dottore in Scienze Biologiche</strong>, attualmente iscritto al corso di laurea magistrale in
+      <strong>Biotecnologie Farmaceutiche</strong> presso Sapienza Università di Roma.
+      Alla ricerca di opportunità di <strong>tirocinio</strong>, preferibilmente per lo svolgimento della
+      <strong>tesi</strong>, in ambito farmaceutico, con interesse verso la
+      <span class="hl">Ricerca &amp; Sviluppo (R&amp;D)</span>,
+      il <span class="hl">Quality Control (QC)</span> e la <span class="hl">Quality Assurance (QA)</span>.
     </div>
   </section>
 
@@ -474,7 +536,7 @@
   <section id="education">
     <div class="sec-head reveal">
       <div class="sec-num">02 — Formazione</div>
-      <h2 class="sec-title">Istruzione</h2>
+      <h2 class="sec-title">Istruzione e corsi</h2>
     </div>
     <div class="timeline">
       <div class="tl open reveal">
@@ -482,12 +544,15 @@
           <div class="tl-top">
             <div>
               <div class="tl-role">Biotecnologie Farmaceutiche</div>
-              <div class="tl-org">Università di Roma “La Sapienza” · Laurea Magistrale</div>
+              <div class="tl-org">Sapienza Università di Roma · Laurea Magistrale</div>
             </div>
-            <div class="tl-period">OTT 2024 — OGGI</div>
+            <div class="tl-period">OTT 2024 — MAR 2027</div>
           </div>
           <div class="tl-body">
-            <p class="tl-desc">Studio avanzato di biotecnologie applicate al settore farmaceutico, con approfondimenti su programmazione in Python, software di visualizzazione molecolare (PyMOL, UCSF ChimeraX) e norme GMP.</p>
+            <p class="tl-desc">Corsi principali: <strong>Chimica farmaceutica computazionale</strong>,
+            <strong>Legislazione farmaceutica</strong>, Tecnologie farmaceutiche,
+            <strong>Ingegneria proteica</strong>, <strong>Bioinformatica</strong>,
+            Biotecnologie farmacologiche.</p>
             <div class="tags"><span class="tag">In corso</span><span class="tag cy">Magistrale</span></div>
           </div>
           <div class="tl-expand"><span class="ar">›</span> dettagli</div>
@@ -497,13 +562,71 @@
         <div class="tl-card">
           <div class="tl-top">
             <div>
+              <div class="tl-role">Esperienza di laboratorio</div>
+              <div class="tl-org">Sapienza Università di Roma · Laboratorio di Biochimica (Prof. F. Altieri)</div>
+            </div>
+            <div class="tl-period">NOV 2025</div>
+          </div>
+          <div class="tl-body">
+            <p class="tl-desc">Tirocinio di 44 ore in <strong>laboratorio farmaco-biologico</strong>.
+            Studio di inibitori della proteina <strong>PDIA3</strong>: saggi enzimatici di inibizione,
+            <strong>quenching di fluorescenza</strong>, determinazione di IC50 e costanti di dissociazione.</p>
+            <div class="tags"><span class="tag">Tirocinio</span><span class="tag cy">44 ore</span></div>
+          </div>
+          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+        </div>
+      </div>
+      <div class="tl reveal">
+        <div class="tl-card">
+          <div class="tl-top">
+            <div>
+              <div class="tl-role">Corso di formazione — Regulatory &amp; Quality Assurance</div>
+              <div class="tl-org">Rome Technopole</div>
+            </div>
+            <div class="tl-period">MAG 2025 — GIU 2025</div>
+          </div>
+          <div class="tl-body">
+            <p class="tl-desc">Percorso di approfondimento su <strong>affari regolatori</strong> e
+            <strong>assicurazione della qualità</strong> nel ciclo di vita del farmaco: linee guida
+            <strong>cGMP</strong>, quadri normativi italiano, europeo e statunitense, autorizzazione
+            all’immissione in commercio e <strong>technology transfer</strong>.</p>
+            <div class="tags"><span class="tag">Corso</span><span class="tag cy">Rome Technopole</span></div>
+          </div>
+          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+        </div>
+      </div>
+      <div class="tl reveal">
+        <div class="tl-card">
+          <div class="tl-top">
+            <div>
+              <div class="tl-role">Bootcamp “HEALTH4U STEM”</div>
+              <div class="tl-org">Johnson &amp; Johnson</div>
+            </div>
+            <div class="tl-period">FEB 2025 — APR 2025</div>
+          </div>
+          <div class="tl-body">
+            <p class="tl-desc">Percorso intensivo dedicato alla <strong>trasformazione digitale</strong>
+            nei processi di R&amp;D e <strong>produzione in ambito farmaceutico e dei dispositivi
+            medici</strong>, con approfondimento sui ruoli emergenti e sull’organizzazione aziendale
+            del settore.</p>
+            <div class="tags"><span class="tag">Bootcamp</span><span class="tag cy">J&amp;J</span></div>
+          </div>
+          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+        </div>
+      </div>
+      <div class="tl reveal">
+        <div class="tl-card">
+          <div class="tl-top">
+            <div>
               <div class="tl-role">Scienze Biologiche</div>
-              <div class="tl-org">Università di Roma “La Sapienza” · Laurea Triennale</div>
+              <div class="tl-org">Sapienza Università di Roma · Laurea Triennale</div>
             </div>
             <div class="tl-period">SET 2021 — GEN 2025</div>
           </div>
           <div class="tl-body">
-            <p class="tl-desc">Formazione solida in biologia, biochimica, analisi biochimico-cliniche e mediche. Base per l'accesso al percorso magistrale in biotecnologie.</p>
+            <p class="tl-desc"><strong>Tesi in Farmacologia</strong> — Utilizzo del cannabidiolo nel
+            trattamento del dolore neuropatico: analisi degli effetti sulla proteina <strong>FKBP5</strong>.
+            Formazione di base in biologia, biochimica e analisi biochimico-cliniche.</p>
             <div class="tags"><span class="tag">Triennale</span><span class="tag cy">Completata</span></div>
           </div>
           <div class="tl-expand"><span class="ar">›</span> dettagli</div>
@@ -515,38 +638,25 @@
   <!-- EXPERIENCE -->
   <section id="experience">
     <div class="sec-head reveal">
-      <div class="sec-num">03 — Carriera &amp; Corsi</div>
-      <h2 class="sec-title">Esperienza</h2>
+      <div class="sec-num">03 — Carriera</div>
+      <h2 class="sec-title">Esperienze professionali</h2>
     </div>
     <div class="timeline">
       <div class="tl open reveal">
         <div class="tl-card">
           <div class="tl-top">
             <div>
-              <div class="tl-role">Rome Technopole “Micro-Credentials”</div>
-              <div class="tl-org">QA, Regulatory &amp; Technology Transfer</div>
+              <div class="tl-role">Volontario e Team Leader</div>
+              <div class="tl-org">PowsUp! APS</div>
             </div>
-            <div class="tl-period">MAG 2025 — LUG 2025</div>
+            <div class="tl-period">OTT 2025 — OGGI</div>
           </div>
           <div class="tl-body">
-            <p class="tl-desc">Corso di alta formazione su Quality Assurance, normativa regolatoria farmaceutica e Technology Transfer. Approfondimento delle GMP e delle farmacopee italiana ed europea.</p>
-            <div class="tags"><span class="tag">Corso</span><span class="tag cy">Rome Technopole</span></div>
-          </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
-        </div>
-      </div>
-      <div class="tl reveal">
-        <div class="tl-card">
-          <div class="tl-top">
-            <div>
-              <div class="tl-role">J&amp;J Bootcamp “HEALTH4U STEM”</div>
-              <div class="tl-org">Johnson &amp; Johnson × Sapienza</div>
-            </div>
-            <div class="tl-period">FEB 2025 — APR 2025</div>
-          </div>
-          <div class="tl-body">
-            <p class="tl-desc">Bootcamp intensivo in collaborazione con Johnson &amp; Johnson e La Sapienza. Tematiche STEM applicate al settore health, con focus su innovazione farmaceutica e life sciences.</p>
-            <div class="tags"><span class="tag">Bootcamp</span><span class="tag cy">J&amp;J</span></div>
+            <p class="tl-desc">Attività di volontariato in un’associazione non-profit che organizza
+            eventi per i propri associati. Mi occupo di <strong>compliance e contabilità</strong> e
+            coordino il <strong>team operativo</strong>, assegnando compiti e gestendo le esigenze
+            che emergono durante gli eventi.</p>
+            <div class="tags"><span class="tag">Volontariato</span><span class="tag cy">In corso</span></div>
           </div>
           <div class="tl-expand"><span class="ar">›</span> dettagli</div>
         </div>
@@ -561,7 +671,10 @@
             <div class="tl-period">OTT 2022 — OGGI</div>
           </div>
           <div class="tl-body">
-            <p class="tl-desc">Gestione operativa del punto vendita, assistenza clienti, gestione ed elaborazione di feedback, multitasking in ambienti ad alto ritmo. Sviluppo di competenze trasversali di comunicazione e problem solving.</p>
+            <p class="tl-desc">Attività di cassa, assistenza clienti e rifornimento scaffali nei fine
+            settimana. Contesto ad alta intensità operativa, che ha permesso di sviluppare
+            <strong>gestione dello stress</strong> e capacità di <strong>lavorare su più
+            attività in parallelo</strong> con le giuste priorità.</p>
             <div class="tags"><span class="tag">Part-time</span><span class="tag cy">In corso</span></div>
           </div>
           <div class="tl-expand"><span class="ar">›</span> dettagli</div>
@@ -576,50 +689,105 @@
       <div class="sec-num">04 — Competenze</div>
       <h2 class="sec-title">Skills</h2>
     </div>
-    <div class="grid">
+
+    <div class="subhead acc collapsed reveal" role="button" tabindex="0" aria-expanded="false"><span class="acc-ic" aria-hidden="true"></span>Tecniche di laboratorio</div>
+    <div class="grid acc-panel">
       <div class="skill reveal">
-        <div class="skill-top"><div class="skill-ic">🧪</div><div class="skill-name">Analisi Biochimico-Cliniche</div></div>
-        <div class="skill-sub">Analisi mediche e biologiche — Laurea in Scienze Biologiche</div>
-        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+        <div class="skill-top"><div class="skill-ic">🧪</div><div class="skill-name">Saggi enzimatici di inibizione</div></div>
+        <div class="skill-sub">Determinazione di IC50 e costanti di dissociazione</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">💡</div><div class="skill-name">Spettrofluorimetria</div></div>
+        <div class="skill-sub">Quenching di fluorescenza e caratterizzazione ligando-proteina</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">📊</div><div class="skill-name">Analisi dei dati sperimentali</div></div>
+        <div class="skill-sub">Elaborazione e analisi con Excel e Python</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🧬</div><div class="skill-name">Design di oligonucleotidi</div></div>
+        <div class="skill-sub">Progettazione di primer e sonde per applicazioni molecolari</div>
+      </div>
+    </div>
+
+    <div class="subhead acc collapsed reveal" role="button" tabindex="0" aria-expanded="false"><span class="acc-ic" aria-hidden="true"></span>Normativa e qualità</div>
+    <div class="grid acc-panel">
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">📋</div><div class="skill-name">Linee guida EU GMP</div></div>
+        <div class="skill-sub">Buone pratiche di fabbricazione europee</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🧯</div><div class="skill-name">EU GMP Annex 1</div></div>
+        <div class="skill-sub">Produzione di medicinali sterili e controllo della contaminazione</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">📜</div><div class="skill-name">AIC &amp; affari regolatori</div></div>
+        <div class="skill-sub">Autorizzazione all’immissione in commercio, technology transfer</div>
+      </div>
+    </div>
+
+    <div class="subhead acc collapsed reveal" role="button" tabindex="0" aria-expanded="false"><span class="acc-ic" aria-hidden="true"></span>Strumenti computazionali</div>
+    <div class="grid acc-panel">
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🧩</div><div class="skill-name">Docking molecolare</div></div>
+        <div class="skill-sub">AutoDock, AutoDock Vina</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🔭</div><div class="skill-name">Visualizzazione molecolare</div></div>
+        <div class="skill-sub">PyMOL, UCSF ChimeraX</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🗄️</div><div class="skill-name">Banche dati biologiche</div></div>
+        <div class="skill-sub">UniProt, PDB, GenBank</div>
       </div>
       <div class="skill reveal">
         <div class="skill-top"><div class="skill-ic">🐍</div><div class="skill-name">Python</div></div>
-        <div class="skill-sub">Progetti personali e universitari — Biotech Farmaceutiche</div>
-        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+        <div class="skill-sub">Scripting per analisi dati e chimica computazionale</div>
       </div>
       <div class="skill reveal">
-        <div class="skill-top"><div class="skill-ic">🧬</div><div class="skill-name">PyMOL &amp; UCSF ChimeraX</div></div>
-        <div class="skill-sub">Visualizzazione e analisi strutturale molecolare</div>
-        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
-      </div>
-      <div class="skill reveal">
-        <div class="skill-top"><div class="skill-ic">📋</div><div class="skill-name">GMP &amp; Farmacopee</div></div>
-        <div class="skill-sub">Italiana ed europea — J&amp;J, Rome Technopole</div>
-        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
-      </div>
-      <div class="skill reveal">
-        <div class="skill-top"><div class="skill-ic">💻</div><div class="skill-name">Linux &amp; Windows</div></div>
-        <div class="skill-sub">Ubuntu, Fedora, Mint — Office, LibreOffice</div>
-        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+        <div class="skill-top"><div class="skill-ic">💻</div><div class="skill-name">Office &amp; sistemi operativi</div></div>
+        <div class="skill-sub">Pacchetto Office / LibreOffice · Windows e Linux</div>
       </div>
     </div>
 
-    <div class="subhead reveal">Soft Skills</div>
-    <div class="soft reveal">
-      <span>Multitasking</span><span>Gestione feedback</span><span>Problem solving</span><span>Comunicazione</span>
+    <div class="subhead acc collapsed reveal" role="button" tabindex="0" aria-expanded="false"><span class="acc-ic" aria-hidden="true"></span>Competenze trasversali</div>
+    <div class="soft acc-panel reveal">
+      <span>Gestione della pressione</span><span>Coordinamento di team</span><span>Precisione e rispetto delle procedure</span><span>Comunicazione con il pubblico</span><span>Autonomia organizzativa</span>
     </div>
 
-    <div class="subhead reveal">Lingue</div>
-    <div class="lang-row">
+    <div class="subhead acc collapsed reveal" role="button" tabindex="0" aria-expanded="false"><span class="acc-ic" aria-hidden="true"></span>Lingue</div>
+    <div class="lang-row acc-panel">
       <div class="lang reveal">
-        <span class="flag">🇮🇹</span>
+        <span class="flag">IT</span>
         <div><div class="l-name">Italiano</div><div class="l-lvl">Madrelingua</div></div>
         <div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
       </div>
       <div class="lang reveal">
-        <span class="flag">🇬🇧</span>
-        <div><div class="l-name">Inglese</div><div class="l-lvl">Fluente — B2 / C1</div></div>
+        <span class="flag">EN</span>
+        <div><div class="l-name">Inglese</div><div class="l-lvl">B2 — Intermedio superiore</div></div>
         <div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERESTS -->
+  <section id="interests">
+    <div class="sec-head reveal">
+      <div class="sec-num">05 — Fuori dal laboratorio</div>
+      <h2 class="sec-title">Hobby e interessi</h2>
+    </div>
+    <div class="grid">
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🎧</div><div class="skill-name">DJ e mixing</div></div>
+        <div class="skill-sub">Selezione musicale e mixing, anche per gli eventi dell’associazione.</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🥾</div><div class="skill-name">Escursionismo</div></div>
+        <div class="skill-sub">Trekking e cammini, soprattutto sui rilievi del Lazio e dell’Appennino.</div>
+      </div>
+      <div class="skill reveal">
+        <div class="skill-top"><div class="skill-ic">🌌</div><div class="skill-name">Astrofotografia</div></div>
+        <div class="skill-sub">Ripresa e post-elaborazione di soggetti a lunga esposizione.</div>
       </div>
     </div>
   </section>
@@ -627,7 +795,7 @@
   <!-- CONTACT -->
   <section id="contact">
     <div class="sec-head reveal">
-      <div class="sec-num">05 — Contatti</div>
+      <div class="sec-num">06 — Contatti</div>
       <h2 class="sec-title">Mettiamoci in contatto</h2>
     </div>
     <div class="contact-grid cols3">
@@ -648,16 +816,16 @@
       </a>
     </div>
 
-    <div class="subhead reveal">Documenti &amp; Risorse</div>
-    <div class="contact-grid cols2">
-      <a class="ccard cy reveal" href="assets/CV%20Damiano%20Catasta%20NEW.pdf" target="_blank" rel="noopener">
+    <div class="subhead acc collapsed reveal" role="button" tabindex="0" aria-expanded="false"><span class="acc-ic" aria-hidden="true"></span>Documenti &amp; Risorse</div>
+    <div class="contact-grid cols2 acc-panel">
+      <a class="ccard cy reveal" href="assets/CV%20Damiano%20Catasta%202026.pdf" target="_blank" rel="noopener">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg></div>
-        <div><div class="c-label">Curriculum Vitae</div><div class="c-sub">Versione cartacea (IT)</div></div>
+        <div><div class="c-label">Curriculum Vitae</div><div class="c-sub">Versione PDF (IT) · agosto 2026</div></div>
         <span class="ar">↗</span>
       </a>
       <a class="ccard reveal" href="assets/SB_1994185_catasta_elaborato.pdf" target="_blank" rel="noopener">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-        <div><div class="c-label">Tesi di Laurea</div><div class="c-sub">Scienze Biologiche (IT)</div></div>
+        <div><div class="c-label">Tesi di Laurea</div><div class="c-sub">Cannabidiolo e FKBP5 — Scienze Biologiche</div></div>
         <span class="ar">↗</span>
       </a>
     </div>
@@ -704,6 +872,51 @@
   document.querySelectorAll('.reveal').forEach((el, i) => {
     el.style.transitionDelay = (i % 4 * 60) + 'ms';
     obs.observe(el);
+  });
+
+  // ── Subhead comprimibili (skills) ──
+  document.querySelectorAll('.subhead.acc').forEach(sh => {
+    const panel = sh.nextElementSibling;
+    let closeTimer = null;
+
+    // i figli .reveal non vengono mai osservati da chiusi: li mostro all'apertura
+    function showReveals() {
+      [panel, ...panel.querySelectorAll('.reveal')].forEach(el => {
+        if (el.classList.contains('reveal')) el.classList.add('in');
+      });
+    }
+    // deve coprire animazione + ritardi dell'ultima card
+    function closeMs() {
+      return matchMedia('(prefers-reduced-motion: reduce)').matches ? 240 : 500;
+    }
+    function open() {
+      sh.classList.remove('collapsed', 'closing');
+      panel.classList.remove('closing');
+      sh.setAttribute('aria-expanded', 'true');
+      showReveals();
+    }
+    function toggle() {
+      if (closeTimer) {            // chiusura in corso: annullo e riapro
+        clearTimeout(closeTimer);
+        closeTimer = null;
+        open();
+        return;
+      }
+      if (sh.classList.contains('collapsed')) { open(); return; }
+      sh.classList.add('closing');  // chiudo solo a animazione finita
+      panel.classList.add('closing');
+      sh.setAttribute('aria-expanded', 'false');
+      closeTimer = setTimeout(() => {
+        closeTimer = null;
+        sh.classList.remove('closing');
+        panel.classList.remove('closing');
+        sh.classList.add('collapsed');
+      }, closeMs());
+    }
+    sh.addEventListener('click', toggle);
+    sh.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
   });
 
   // ── Floating molecules / proteins background ──
