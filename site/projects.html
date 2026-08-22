@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Progetti - Damiano Catasta</title>
+<meta name="description" content="Progetti di Damiano Catasta in ambito farmaceutico e biotecnologico: chimica farmaceutica computazionale, QSAR e docking molecolare, esperienze di laboratorio e tesi di laurea.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=20260822">
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-in">
+    <a href="index.html" class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#04130d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v5.5L5.3 17a1.5 1.5 0 0 0 1.3 2.3h10.8a1.5 1.5 0 0 0 1.3-2.3L14 8.5V3"/><path d="M7.5 14h9"/></svg></span> Damiano Catasta</a>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <a class="nav-back" href="index.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        Curriculum
+      </a>
+      <button class="theme-btn" id="themeBtn" aria-label="Cambia tema"></button>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap" id="top">
+
+  <header class="page-head reveal">
+    <div class="sec-num">Portfolio</div>
+    <h1>Pro<span class="grad">getti</span></h1>
+    <p>
+      Lavori accademici e di laboratorio in ambito farmaceutico e biotecnologico.
+      Seleziona un progetto per leggerne la sintesi e sfogliare le slide.
+    </p>
+  </header>
+
+  <section id="listView">
+    <div class="filters" id="projFilters"></div>
+    <div class="proj-grid" id="projGrid"></div>
+  </section>
+
+  <section class="detail" id="projDetail"></section>
+</div>
+
+<footer>
+  © 2026 Damiano Catasta — Roma, Italia · <a href="https://damianocatasta.site" target="_blank" rel="noopener">damianocatasta.site</a>
+</footer>
+
+<script src="assets/site.js?v=20260822" defer></script>
+<script src="assets/bg.js?v=20260822" defer></script>
+<script src="assets/notebook.js?v=20260822" defer></script>
+<script src="assets/projects.js?v=20260822" defer></script>
+</body>
+</html>
