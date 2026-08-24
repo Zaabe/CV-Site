@@ -309,10 +309,15 @@
     color: var(--primary); border: 1px solid var(--border);
   }
   .tag.cy { background: var(--secondary-soft); color: var(--secondary); }
+  /* Indicatore di espansione: a destra e nel colore d'accento, cosi' si capisce
+     che la scheda si apre. In grigio come prima passava inosservato. */
   .tl-expand {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint);
-    margin-top: 10px; display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--primary); opacity: 0.82;
+    margin-top: 10px; display: flex; justify-content: flex-end; align-items: center; gap: 5px;
+    transition: opacity 0.2s;
   }
+  .tl:hover .tl-expand { opacity: 1; }
   .tl-expand .ar { transition: transform 0.3s; }
   .tl.open .tl-expand .ar { transform: rotate(90deg); }
 
