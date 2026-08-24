@@ -146,13 +146,41 @@
       canvas.style.width = innerWidth + 'px';
       canvas.style.height = innerHeight + 'px';
     }
-    function init() {
-      // density grows with sqrt(ratio) so large pages don't get overcrowded
+    // density grows with sqrt(ratio) so large pages don't get overcrowded
+    function targetCount() {
       const ratio = Math.max(1, document.body.scrollHeight / innerHeight);
       const base = innerWidth < 720 ? 10 : 22;
-      const count = Math.min(Math.round(base * Math.sqrt(ratio)), base * 3);
+      return Math.min(Math.round(base * Math.sqrt(ratio)), base * 3);
+    }
+    // porta il numero di molecole a quello desiderato senza toccare le esistenti
+    function fitCount() {
+      const n = targetCount();
+      while (mols.length > n) mols.pop();
+      while (mols.length < n) mols.push(makeMol());
+    }
+    function init() {
       mols = [];
-      for (let i = 0; i < count; i++) mols.push(makeMol());
+      fitCount();
+    }
+
+    // Ridimensionamento: le molecole restano le stesse, riportate in proporzione
+    // nella nuova area. Rigenerarle a ogni evento resize le faceva ripartire da
+    // posizioni casuali decine di volte al secondo mentre si trascina il bordo.
+    // "prima" e' lo stato precedente alla prima variazione della raffica.
+    function reflow(pre) {
+      // x e y sono in pixel di canvas, quindi il rapporto fra le dimensioni
+      // comprende anche un eventuale cambio di dpr. Velocita' e scala invece no.
+      const kx = pre.w ? w / pre.w : 1;
+      const ky = pre.worldH ? worldH / pre.worldH : 1;
+      const kd = pre.dpr ? dpr / pre.dpr : 1;
+      for (const m of mols) {
+        m.x *= kx;
+        m.y *= ky;
+        m.vx *= kd;
+        m.vy *= kd;
+        m.scale *= kd;
+      }
+      fitCount();
     }
 
     // ── Mouse / touch interaction ──
@@ -297,7 +325,18 @@
       requestAnimationFrame(draw);
     }
     resize(); init(); draw();
-    addEventListener('resize', () => { resize(); init(); });
+    let prima = null;
+    addEventListener('resize', () => {
+      if (!prima) prima = { dpr: dpr, w: w, worldH: worldH, queued: false };
+      resize();                       // il canvas segue la finestra subito
+      if (prima.queued) return;       // il resto una volta per frame
+      prima.queued = true;
+      requestAnimationFrame(() => {
+        const p = prima;
+        prima = null;
+        reflow(p);
+      });
+    });
     if (themeBtn) themeBtn.addEventListener('click', () => setTimeout(() => {
       cPrim = hexToRgb(cssVar('--primary', '#34d399'));
       cSec = hexToRgb(cssVar('--secondary', '#22d3ee'));
