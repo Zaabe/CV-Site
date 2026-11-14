@@ -6,6 +6,9 @@
     const canvas = document.getElementById('bg-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    // Con "riduci movimento" le molecole restano disegnate ma ferme: niente
+    // ciclo continuo, si ridisegna solo quando la pagina scorre o cambia.
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let w, h, worldH, dpr, mols = [];
 
     function cssVar(name, fb) { return getComputedStyle(root).getPropertyValue(name).trim() || fb; }
@@ -209,6 +212,7 @@
     }, { passive: true });
 
     addEventListener('mousedown', e => {
+      if (still) return;
       if (e.target.closest('nav,button,a,input,select,textarea,label')) return;
       const p = toWorld(e.clientX, e.clientY);
       mx = p.x; my = p.y;
@@ -223,9 +227,12 @@
       }
     });
 
-    addEventListener('mouseleave', () => { mx = -9999; my = -9999; });
+    // mouseleave non risale fino a window: ascoltato li' non scattava mai, e
+    // le molecole restavano respinte dall'ultimo punto toccato dal cursore.
+    document.documentElement.addEventListener('mouseleave', () => { mx = -9999; my = -9999; });
 
     addEventListener('touchstart', e => {
+      if (still) return;
       const t = e.touches[0], p = toWorld(t.clientX, t.clientY);
       mx = p.x; my = p.y; mdx = mdy = 0;
       const m = nearestMol(mx, my, 85 * dpr);
@@ -253,7 +260,14 @@
       if (nh !== worldH) { worldH = nh; }
     }).observe(document.body);
 
-    function draw() {
+    // La fisica e' tarata a 60 fps e scalata sul tempo trascorso (dt = 1 a
+    // 60 fps): con passi fissi per frame, su uno schermo a 144 Hz tutto
+    // correva 2,4 volte piu' in fretta. Il tetto evita il salto al rientro
+    // da una scheda in secondo piano.
+    let lastT = 0;
+    function draw(now) {
+      const dt = (lastT && now) ? Math.min((now - lastT) / 16.667, 4) : 1;
+      lastT = now || 0;
       const scrollOff = scrollY * dpr; // world→screen Y offset
       ctx.clearRect(0, 0, w, h);
       let nearAny = false;
@@ -262,25 +276,27 @@
       for (const m of mols) {
         if (m.grabbed) {
           // Spring-follow cursor in world space
-          m.x += (mx - m.x) * 0.28;
-          m.y += (my - m.y) * 0.28;
-          m.ang += m.va * 0.4;
-        } else {
+          const k = 1 - Math.pow(0.72, dt);
+          m.x += (mx - m.x) * k;
+          m.y += (my - m.y) * k;
+          m.ang += m.va * 0.4 * dt;
+        } else if (!still) {
           // Repulsion from cursor (world coords)
           const dx = m.x - mx, dy = m.y - my, d = Math.hypot(dx, dy) || 1;
           const R = 120 * dpr;
           if (d < R) {
-            const f = 0.14 * (1 - d / R) * R / d;
+            const f = 0.14 * (1 - d / R) * R / d * dt;
             m.vx += dx * f; m.vy += dy * f;
             // Only highlight if molecule is actually visible on screen
             const sy = m.y - scrollOff;
             if (d < 60 * dpr && sy > -pad && sy < h + pad) nearAny = true;
           }
-          m.vx *= 0.965; m.vy *= 0.965;
+          const fr = Math.pow(0.965, dt);
+          m.vx *= fr; m.vy *= fr;
           const spd = Math.hypot(m.vx, m.vy), MAX = 10 * dpr;
           if (spd > MAX) { m.vx = m.vx / spd * MAX; m.vy = m.vy / spd * MAX; }
-          m.x += m.vx; m.y += m.vy;
-          m.ang += m.va + spd * 0.004 * Math.sign(m.va || 1);
+          m.x += m.vx * dt; m.y += m.vy * dt;
+          m.ang += (m.va + spd * 0.004 * Math.sign(m.va || 1)) * dt;
         }
 
         // Horizontal wrap (viewport width)
@@ -322,9 +338,17 @@
         }
       }
       if (!grabbed) document.body.style.cursor = nearAny ? 'grab' : '';
-      requestAnimationFrame(draw);
+      if (!still) requestAnimationFrame(draw);
+    }
+    // da fermi: un solo ridisegno per frame, su richiesta
+    let pending = false;
+    function redraw() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(t => { pending = false; draw(t); });
     }
     resize(); init(); draw();
+    if (still) addEventListener('scroll', redraw, { passive: true });
     let prima = null;
     addEventListener('resize', () => {
       if (!prima) prima = { dpr: dpr, w: w, worldH: worldH, queued: false };
@@ -335,11 +359,13 @@
         const p = prima;
         prima = null;
         reflow(p);
+        if (still) redraw();
       });
     });
     if (themeBtn) themeBtn.addEventListener('click', () => setTimeout(() => {
       cPrim = hexToRgb(cssVar('--primary', '#34d399'));
       cSec = hexToRgb(cssVar('--secondary', '#22d3ee'));
+      if (still) redraw();
     }, 60));
   })();
 

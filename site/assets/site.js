@@ -5,37 +5,79 @@
   const themeBtn = document.getElementById('themeBtn');
   const sun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
   const moon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
-  function applyTheme(t) {
+  // Il tema lo sceglie lo script in <head>, prima del primo disegno: qui si
+  // allinea soltanto l'icona. Applicarlo da questo file (che e' defer) faceva
+  // vedere il tema scuro per un istante a chi aveva scelto il chiaro; e
+  // salvarlo a ogni caricamento fissava "scuro" anche per chi non aveva mai
+  // scelto, cosi' la preferenza di sistema non veniva piu' seguita.
+  const currentTheme = () => root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const showTheme = (t) => { if (themeBtn) themeBtn.innerHTML = t === 'dark' ? sun : moon; };
+  showTheme(currentTheme());
+  if (themeBtn) themeBtn.addEventListener('click', () => {
+    const t = currentTheme() === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', t);
-    themeBtn.innerHTML = t === 'dark' ? sun : moon;
+    showTheme(t);
     try { localStorage.setItem('theme', t); } catch (e) {}
-  }
-  let saved = 'dark';
-  try { saved = localStorage.getItem('theme') || 'dark'; } catch (e) {}
-  applyTheme(saved);
-  themeBtn.addEventListener('click', () => {
-    applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
 
   // ── Mobile nav ──
   const navToggle = document.getElementById('navToggle');
   const navlinks = document.getElementById('navlinks');
-  if (navToggle && navlinks) navToggle.addEventListener('click', () => navlinks.classList.toggle('open'));
-  if (navlinks) navlinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navlinks.classList.remove('open')));
+  if (navToggle && navlinks) {
+    const menuOpen = () => navlinks.classList.contains('open');
+    const setMenu = (open) => {
+      navlinks.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    navToggle.addEventListener('click', () => setMenu(!menuOpen()));
+    navlinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+    // un menu a tendina si chiude anche toccando altrove o con Esc
+    document.addEventListener('click', e => {
+      if (menuOpen() && !e.target.closest('nav')) setMenu(false);
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && menuOpen()) { setMenu(false); navToggle.focus(); }
+    });
+  }
 
   // ── Expandable timeline ──
-  document.querySelectorAll('.tl').forEach(tl => {
-    tl.addEventListener('click', () => tl.classList.toggle('open'));
+  // La scheda intera resta cliccabile col mouse; da tastiera si arriva al
+  // pulsante "dettagli", il cui click risale fin qui. Prima le schede erano
+  // div senza focus ne' ruolo: con la sola tastiera non si aprivano.
+  document.querySelectorAll('.tl').forEach((tl, n) => {
+    const btn = tl.querySelector('.tl-expand');
+    const body = tl.querySelector('.tl-body');
+    if (btn && body) {
+      if (!body.id) body.id = 'tl-body-' + n;
+      btn.setAttribute('aria-controls', body.id);
+    }
+    const sync = () => {
+      if (btn) btn.setAttribute('aria-expanded', tl.classList.contains('open') ? 'true' : 'false');
+    };
+    sync();
+    tl.addEventListener('click', () => { tl.classList.toggle('open'); sync(); });
   });
 
   // ── Reveal on scroll ──
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  document.querySelectorAll('.reveal').forEach((el, i) => {
-    el.style.transitionDelay = (i % 4 * 60) + 'ms';
-    obs.observe(el);
-  });
+  // Il ritardo scagliona l'ingresso, poi va tolto: restando sull'elemento
+  // ritardava anche ogni transizione successiva, e le card reagivano
+  // all'hover con 60-180 ms di lag.
+  function reveal(el) {
+    el.classList.add('in');
+    setTimeout(() => { el.style.transitionDelay = ''; }, 1000);
+  }
+  const reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { reveal(e.target); obs.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach((el, i) => {
+      el.style.transitionDelay = (i % 4 * 60) + 'ms';
+      obs.observe(el);
+    });
+  } else {
+    reveals.forEach(el => el.classList.add('in'));
+  }
 
   // ── Subhead comprimibili (skills) ──
   document.querySelectorAll('.subhead.acc').forEach(sh => {
@@ -45,7 +87,7 @@
     // i figli .reveal non vengono mai osservati da chiusi: li mostro all'apertura
     function showReveals() {
       [panel, ...panel.querySelectorAll('.reveal')].forEach(el => {
-        if (el.classList.contains('reveal')) el.classList.add('in');
+        if (el.classList.contains('reveal')) reveal(el);
       });
     }
     // deve coprire animazione + ritardi dell'ultima card
@@ -130,6 +172,14 @@
     let dashOffset = 0;
     let ringAngle = 0;
 
+    function place() {
+      if (nascent) nascent.style.strokeDashoffset = dashOffset;
+      if (dnaSpin) dnaSpin.setAttribute('transform', 'rotate(' + ringAngle.toFixed(2) + ' 100 100)');
+      if (enz) enz.setAttribute('transform', 'rotate(' + norm(cur + 90).toFixed(1) + ' 100 100)');
+    }
+    // Con "riduci movimento" l'anello resta disegnato ma fermo.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { place(); return; }
+
     addEventListener('mousemove', function (e) {
       if (isOverAvatar) return;
       autoMode = false;
@@ -140,25 +190,30 @@
     wrap.addEventListener('mouseenter', function () { isOverAvatar = true; });
     wrap.addEventListener('mouseleave', function () { isOverAvatar = false; });
 
-    (function follow() {
-      // Nascent strand flow
-      dashOffset -= 0.3;
-      if (nascent) nascent.style.strokeDashoffset = dashOffset;
+    // I passi sono tarati a 60 fps e scalati sul tempo trascorso: avanzando
+    // di una quantita' fissa per frame, su uno schermo a 144 Hz l'anello
+    // girava 2,4 volte piu' in fretta. dt = 1 a 60 fps; il tetto evita il
+    // salto quando la scheda torna in primo piano.
+    let last = 0;
+    function follow(now) {
+      const dt = last ? Math.min((now - last) / 16.667, 4) : 1;
+      last = now;
 
-      // Ring rotation (JS-driven: 24s/revolution ≈ 0.25°/frame @60fps)
-      ringAngle = norm(ringAngle + 0.25);
-      if (dnaSpin) dnaSpin.setAttribute('transform', 'rotate(' + ringAngle.toFixed(2) + ' 100 100)');
+      dashOffset -= 0.3 * dt;                      // filamento nascente
+      ringAngle = norm(ringAngle + 0.25 * dt);     // 24 s per giro
 
-      // Enzyme: auto-orbit or follow mouse
+      // Enzima: orbita da solo o segue il mouse
       if (autoMode) {
-        cur = norm(cur + 0.3);
+        cur = norm(cur + 0.3 * dt);
         target = cur;
       } else if (!isOverAvatar) {
-        cur = norm(cur + shortDiff(target, cur) * 0.18);
+        cur = norm(cur + shortDiff(target, cur) * (1 - Math.pow(0.82, dt)));
       }
-      // isOverAvatar → freeze
+      // isOverAvatar: fermo
 
-      if (enz) enz.setAttribute('transform', 'rotate(' + norm(cur + 90).toFixed(1) + ' 100 100)');
+      place();
       requestAnimationFrame(follow);
-    })();
+    }
+    place();                       // posizione iniziale, senza attendere un frame
+    requestAnimationFrame(follow);
   })();

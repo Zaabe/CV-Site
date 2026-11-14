@@ -8,19 +8,21 @@ ripulito dagli artefatti Cloudflare e impacchettato per il deploy con Docker / P
 ```
 .
 ├── Dockerfile            # immagine nginx:alpine che serve il sito
-├── nginx.conf            # config nginx (gzip, cache, security headers, URL senza .html)
+├── nginx.conf            # config nginx (gzip, cache, security headers, URL senza .html, 404)
 ├── docker-compose.yml    # stack pronto per Portainer
 ├── .dockerignore
 └── site/
     ├── index.html        # il curriculum
     ├── projects.html     # i progetti (raggiungibile su /projects)
+    ├── 404.html          # risposta agli indirizzi inesistenti
+    ├── favicon.svg       # icona del sito
     └── assets/
         ├── site.css      # tema e componenti, condivisi dalle due pagine
         ├── site.js       # tema, nav mobile, timeline, reveal, accordion
         ├── bg.js         # sfondo animato a molecole
         ├── projects.js   # dati dei progetti + viewer delle slide
         ├── notebook.js   # renderer .ipynb (markdown, LaTeX, Python, output)
-        ├── avatar.png    # foto profilo
+        ├── avatar-2026.webp   # foto profilo
         ├── CV Damiano Catasta 2026.pdf
         ├── SB_1994185_catasta_elaborato.pdf   # tesi triennale
         └── projects/
@@ -96,7 +98,13 @@ for i, page in enumerate(doc, 1):
 - Nessun dato Cloudflare residuo: l'email è in chiaro come `mailto:` e l'avatar è un file locale.
 - Lo sfondo animato a molecole è renderizzato via `<canvas>` in JavaScript puro, nessuna libreria esterna.
 - `nginx.conf` risolve gli URL senza estensione (`try_files $uri $uri.html`), quindi `/projects`
-  serve `projects.html`. CSS e JS hanno cache di 1 ora, immagini e PDF di 30 giorni.
+  serve `projects.html`; un indirizzo che non esiste risponde 404 con `404.html`.
+- Cache: HTML, CSS, JS e PDF si rivalidano a ogni caricamento (`no-cache`, risposte 304), quindi
+  un aggiornamento è visibile subito anche a chi ha già visitato il sito. Immagini e slide restano
+  in cache 30 giorni: se ne sostituisci una, cambiale nome (come `avatar-2026.webp`).
+- Il tema viene scelto da un piccolo script in `<head>` (tema salvato, altrimenti preferenza di
+  sistema) prima che la pagina venga disegnata. Lo stesso script mette la classe `js` su `<html>`:
+  senza di essa, e in stampa, timeline e competenze restano aperte e leggibili.
 - I `.ipynb` sono dichiarati `application/json` con un `default_type` limitato a quella
   location, così vengono gzippati (408 KB -> 272 KB: il grosso sono immagini in base64,
   che comprimono poco). Non usare un blocco `types` a livello server: sostituisce l'intera

@@ -1,16 +1,31 @@
 <!DOCTYPE html>
 <html lang="it" data-theme="dark">
 <head>
-<script defer src="https://umami.damianocatasta.site/script.js" data-website-id="8b2c01db-5489-41b5-b83a-cebe97d1e59a"></script>
-<script defer src="https://umami.damianocatasta.site/recorder.js" data-website-id="8b2c01db-5489-41b5-b83a-cebe97d1e59a"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Tema scelto prima del primo disegno, per non far lampeggiare quello
+   sbagliato: quello salvato, altrimenti la preferenza di sistema. La classe
+   js dice al CSS che le animazioni di comparsa avranno chi le fa partire. */
+(function () {
+  var d = document.documentElement, t = null;
+  try { t = localStorage.getItem('theme'); } catch (e) {}
+  if (t !== 'light' && t !== 'dark') {
+    t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  d.setAttribute('data-theme', t);
+  d.classList.add('js');
+})();
+</script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script defer src="https://umami.damianocatasta.site/script.js" data-website-id="8b2c01db-5489-41b5-b83a-cebe97d1e59a"></script>
+<script defer src="https://umami.damianocatasta.site/recorder.js" data-website-id="8b2c01db-5489-41b5-b83a-cebe97d1e59a"></script>
 <title>Damiano Catasta - Biotecnologie Farmaceutiche</title>
 <meta name="description" content="Curriculum di Damiano Catasta, Dottore in Scienze Biologiche e studente di Biotecnologie Farmaceutiche alla Sapienza di Roma. In cerca di tirocinio per tesi in ambito farmaceutico: R&D, Quality Control e Quality Assurance.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20260822">
+<link rel="stylesheet" href="assets/site.css?v=20261114">
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
@@ -29,7 +44,7 @@
     </ul>
     <div style="display:flex; gap:10px; align-items:center;">
       <button class="theme-btn" id="themeBtn" aria-label="Cambia tema"></button>
-      <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navlinks">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>
@@ -114,7 +129,7 @@
             Biotecnologie farmacologiche.</p>
             <div class="tags"><span class="tag">In corso</span><span class="tag cy">Magistrale</span></div>
           </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+          <button type="button" class="tl-expand"><span class="ar" aria-hidden="true">›</span> dettagli</button>
         </div>
       </div>
       <div class="tl reveal">
@@ -132,7 +147,7 @@
             <strong>quenching di fluorescenza</strong>, determinazione di IC50 e costanti di dissociazione.</p>
             <div class="tags"><span class="tag">Tirocinio</span><span class="tag cy">44 ore</span></div>
           </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+          <button type="button" class="tl-expand"><span class="ar" aria-hidden="true">›</span> dettagli</button>
         </div>
       </div>
       <div class="tl reveal">
@@ -151,7 +166,7 @@
             all’immissione in commercio e <strong>technology transfer</strong>.</p>
             <div class="tags"><span class="tag">Corso</span><span class="tag cy">Rome Technopole</span></div>
           </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+          <button type="button" class="tl-expand"><span class="ar" aria-hidden="true">›</span> dettagli</button>
         </div>
       </div>
       <div class="tl reveal">
@@ -170,7 +185,7 @@
             del settore.</p>
             <div class="tags"><span class="tag">Bootcamp</span><span class="tag cy">J&amp;J</span></div>
           </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+          <button type="button" class="tl-expand"><span class="ar" aria-hidden="true">›</span> dettagli</button>
         </div>
       </div>
       <div class="tl reveal">
@@ -188,7 +203,7 @@
             Formazione di base in biologia, biochimica e analisi biochimico-cliniche.</p>
             <div class="tags"><span class="tag">Triennale</span><span class="tag cy">Completata</span></div>
           </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+          <button type="button" class="tl-expand"><span class="ar" aria-hidden="true">›</span> dettagli</button>
         </div>
       </div>
     </div>
@@ -216,7 +231,7 @@
             che emergono durante gli eventi.</p>
             <div class="tags"><span class="tag">Volontariato</span><span class="tag cy">In corso</span></div>
           </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+          <button type="button" class="tl-expand"><span class="ar" aria-hidden="true">›</span> dettagli</button>
         </div>
       </div>
       <div class="tl reveal">
@@ -235,7 +250,7 @@
             attività in parallelo</strong> con le giuste priorità.</p>
             <div class="tags"><span class="tag">Part-time</span><span class="tag cy">In corso</span></div>
           </div>
-          <div class="tl-expand"><span class="ar">›</span> dettagli</div>
+          <button type="button" class="tl-expand"><span class="ar" aria-hidden="true">›</span> dettagli</button>
         </div>
       </div>
     </div>
@@ -378,7 +393,7 @@
   © 2026 Damiano Catasta — Roma, Italia · <a href="https://damianocatasta.site" target="_blank" rel="noopener">damianocatasta.site</a>
 </footer>
 
-<script src="assets/site.js?v=20260822" defer></script>
-<script src="assets/bg.js?v=20260822" defer></script>
+<script src="assets/site.js?v=20261114" defer></script>
+<script src="assets/bg.js?v=20261114" defer></script>
 </body>
 </html>

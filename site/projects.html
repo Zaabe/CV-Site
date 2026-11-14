@@ -3,12 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Tema scelto prima del primo disegno, per non far lampeggiare quello
+   sbagliato: quello salvato, altrimenti la preferenza di sistema. La classe
+   js dice al CSS che le animazioni di comparsa avranno chi le fa partire. */
+(function () {
+  var d = document.documentElement, t = null;
+  try { t = localStorage.getItem('theme'); } catch (e) {}
+  if (t !== 'light' && t !== 'dark') {
+    t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  d.setAttribute('data-theme', t);
+  d.classList.add('js');
+})();
+</script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script defer src="https://umami.damianocatasta.site/script.js" data-website-id="8b2c01db-5489-41b5-b83a-cebe97d1e59a"></script>
+<script defer src="https://umami.damianocatasta.site/recorder.js" data-website-id="8b2c01db-5489-41b5-b83a-cebe97d1e59a"></script>
 <title>Progetti - Damiano Catasta</title>
 <meta name="description" content="Progetti di Damiano Catasta in ambito farmaceutico e biotecnologico: chimica farmaceutica computazionale, QSAR e docking molecolare, esperienze di laboratorio e tesi di laurea.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20260822">
+<link rel="stylesheet" href="assets/site.css?v=20261114">
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
@@ -49,9 +66,9 @@
   © 2026 Damiano Catasta — Roma, Italia · <a href="https://damianocatasta.site" target="_blank" rel="noopener">damianocatasta.site</a>
 </footer>
 
-<script src="assets/site.js?v=20260822" defer></script>
-<script src="assets/bg.js?v=20260822" defer></script>
-<script src="assets/notebook.js?v=20260822" defer></script>
-<script src="assets/projects.js?v=20260822" defer></script>
+<script src="assets/site.js?v=20261114" defer></script>
+<script src="assets/bg.js?v=20261114" defer></script>
+<script src="assets/notebook.js?v=20261114" defer></script>
+<script src="assets/projects.js?v=20261114" defer></script>
 </body>
 </html>

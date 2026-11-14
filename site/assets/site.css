@@ -299,8 +299,21 @@
     font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--secondary);
     white-space: nowrap; padding-top: 3px; flex-shrink: 0;
   }
-  .tl-body { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s ease, opacity 0.3s, margin 0.3s; }
-  .tl.open .tl-body { max-height: 460px; opacity: 1; margin-top: 12px; }
+  /* Il corpo si chiude solo a schermo e solo se lo script e' partito (classe
+     .js su <html>, messa da <head>). Senza script o in stampa resta aperto:
+     prima, in quei due casi, il testo non si poteva leggere in nessun modo.
+     visibility toglie il testo chiuso anche ai lettori di schermo. */
+  .tl-body { margin-top: 12px; }
+  @media screen {
+    .js .tl-body {
+      max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; visibility: hidden;
+      transition: max-height 0.4s ease, opacity 0.3s, margin 0.3s, visibility 0s 0.4s;
+    }
+    .js .tl.open .tl-body {
+      max-height: 460px; opacity: 1; margin-top: 12px; visibility: visible;
+      transition: max-height 0.4s ease, opacity 0.3s, margin 0.3s, visibility 0s;
+    }
+  }
   .tl-desc { font-size: 14px; line-height: 1.7; color: var(--muted); }
   .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
   .tag {
@@ -316,7 +329,13 @@
     color: var(--primary); opacity: 0.82;
     margin-top: 10px; display: flex; justify-content: flex-end; align-items: center; gap: 5px;
     transition: opacity 0.2s;
+    /* e' un <button>: raggiungibile da tastiera, senza l'aspetto di default */
+    margin-left: auto; padding: 0; border: 0; background: none; cursor: pointer;
   }
+  .tl-expand:focus-visible {
+    outline: 2px solid var(--primary); outline-offset: 5px; border-radius: 6px; opacity: 1;
+  }
+  html:not(.js) .tl-expand { display: none; }
   .tl:hover .tl-expand { opacity: 1; }
   .tl-expand .ar { transition: transform 0.3s; }
   .tl.open .tl-expand .ar { transform: rotate(90deg); }
@@ -343,7 +362,7 @@
 
   /* Subhead comprimibile (accordion) */
   .subhead.acc { cursor: pointer; user-select: none; margin: 30px 0 14px; transition: color 0.2s; }
-  .subhead.acc.collapsed { margin-bottom: 0; }
+  @media screen { .js .subhead.acc.collapsed { margin-bottom: 0; } }
   .subhead.acc:hover { color: var(--primary); }
   .subhead.acc:hover .acc-ic { transform: scale(1.12); }
   .subhead.acc::before { display: none; }
@@ -361,7 +380,8 @@
   .subhead.acc.collapsed .acc-ic::after,
   .subhead.acc.closing .acc-ic::after { opacity: 1; transform: rotate(0deg) scaleY(1); }
   .subhead.acc:focus-visible { outline: none; color: var(--primary); }
-  .subhead.acc.collapsed + .acc-panel { display: none; }
+  /* come la timeline: nascosto solo a schermo e solo con lo script attivo */
+  @media screen { .js .subhead.acc.collapsed + .acc-panel { display: none; } }
 
   /* apertura: le card entrano una dopo l'altra */
   .acc-panel > * { animation: accItem 0.45s cubic-bezier(0.2, 1.25, 0.4, 1) backwards; }
@@ -445,8 +465,12 @@
   footer a { color: var(--primary); text-decoration: none; }
 
   /* Reveal animation */
-  .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.in { opacity: 1; transform: none; }
+  /* Invisibile in partenza solo se c'e' lo script che poi lo mostra: senza
+     .js (script assente o bloccato) e in stampa il contenuto resta visibile. */
+  @media screen {
+    .js .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .js .reveal.in { opacity: 1; transform: none; }
+  }
 
   /* Responsive */
   /* larghezze intermedie: la nav con 6 voci starebbe stretta e il brand andrebbe a capo */
@@ -465,8 +489,10 @@
     .nav-links.open {
       display: flex; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0;
       background: var(--surface-solid); border-bottom: 1px solid var(--border);
-      padding: 18px 24px; gap: 18px;
+      padding: 8px 24px; gap: 0; align-items: stretch; text-align: center;
     }
+    /* la riga intera e' il bersaglio: prima era alta quanto il testo, 15 px */
+    .nav-links.open a { display: block; padding: 11px 0; font-size: 14px; }
     .nav-toggle {
       display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px;
       border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
@@ -480,7 +506,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; scroll-behavior: auto; }
-    .reveal { opacity: 1; transform: none; }
+    .js .reveal { opacity: 1; transform: none; }
     /* niente movimento, ma apertura e chiusura restano percepibili in dissolvenza */
     .acc-panel > * { animation: accFade 0.3s ease backwards !important; }
     .acc-panel.closing > * { animation: accFadeOut 0.22s ease forwards !important; }
@@ -530,7 +556,7 @@
   position: relative; display: flex; flex-direction: column; gap: 12px;
   text-align: left; cursor: pointer; width: 100%;
   background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
-  padding: 22px; color: var(--text); font: inherit;
+  padding: 22px; color: var(--text); font: inherit; text-decoration: none;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
 }
@@ -592,6 +618,8 @@
   font-family: 'Space Grotesk', sans-serif; font-weight: 600;
   font-size: clamp(22px, 3.6vw, 32px); line-height: 1.15; letter-spacing: -0.02em;
 }
+/* riceve il focus da script all'apertura: l'anello non serve */
+.detail h2:focus { outline: none; }
 .detail-meta {
   display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px;
   font-size: 13px; color: var(--muted);
@@ -635,6 +663,60 @@
 .stage:fullscreen { border-radius: 0; border: 0; aspect-ratio: auto; background: #000; }
 .stage:fullscreen img { background: #000; }
 
+/* Schermo intero senza l'API del browser: lo stage copre la finestra. E' lo
+   strato che c'e' sempre; dove il browser concede lo schermo intero vero si
+   somma a questo. .wrap ha un suo z-index, quindi va alzato lui sopra la
+   barra di navigazione: lo z-index dello stage da solo non basterebbe. */
+html.viewer-full { overflow: hidden; }
+html.viewer-full .wrap { z-index: 200; }
+.stage.full {
+  position: fixed; inset: 0; z-index: 300;
+  width: 100vw; height: 100vh; height: 100dvh;
+  border-radius: 0; border: 0; aspect-ratio: auto; background: #000; box-shadow: none;
+}
+.stage.full img { background: #000; }
+
+.vclose, .vfull-count { display: none; }
+.stage.full .vclose {
+  display: grid; place-items: center; position: absolute; top: 14px; right: 14px;
+  width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.28); color: #fff;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: background 0.2s;
+}
+.stage.full .vclose:hover { background: rgba(0,0,0,0.8); }
+.vclose svg { width: 18px; height: 18px; }
+.stage.full .vfull-count {
+  display: block; position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #fff;
+  padding: 5px 12px; border-radius: 100px; background: rgba(0,0,0,0.55);
+  pointer-events: none;
+}
+/* sul nero i comandi restano leggibili in entrambi i temi */
+.stage.full .vnav {
+  color: #fff; background: rgba(0,0,0,0.55); border-color: rgba(255,255,255,0.28);
+}
+
+/* Telefono in verticale: una slide 16:9 occuperebbe un quarto dello schermo.
+   La si ruota di 90 gradi, cosi' il lato lungo della slide segue quello dello
+   schermo; girando il telefono la regola smette di valere e torna dritta.
+   I comandi seguono la slide: "precedente" in alto, "successiva" in basso. */
+@media (orientation: portrait) and (max-width: 720px) {
+  .stage.full img {
+    inset: auto; top: 50%; left: 50%;
+    width: 100vh; width: 100dvh; height: 100vw;
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+  .stage.full .vnav.prev {
+    left: 50%; right: auto; top: 14px; bottom: auto; transform: translateX(-50%) rotate(90deg);
+  }
+  .stage.full .vnav.next {
+    left: 50%; right: auto; top: auto; bottom: 14px; transform: translateX(-50%) rotate(90deg);
+  }
+  .stage.full .vfull-count { left: 14px; top: 20px; bottom: auto; transform: none; }
+}
+
 .vnav {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
@@ -672,6 +754,7 @@
 }
 .vbtn:hover { color: var(--text); border-color: var(--border-strong); transform: translateY(-1px); }
 .vbtn svg { width: 14px; height: 14px; }
+.vbtn[hidden] { display: none; }
 
 .thumbs {
   display: flex; gap: 9px; overflow-x: auto; padding: 16px 2px 6px;
@@ -844,4 +927,34 @@ ol.nb-list li::before {
   .nb-out { margin-left: 0; }
   .nb-md h2 { font-size: 21px; }
   .nb-code { font-size: 11.5px; }
+}
+
+
+/* ══════════════════ STAMPA ══════════════════ */
+
+/* Carta bianca qualunque sia il tema, niente sfondi animati ne' barre fisse.
+   Timeline e competenze sono gia' aperte: le regole che le chiudono valgono
+   solo a schermo. */
+@media print {
+  :root[data-theme] {
+    --bg: #fff; --bg-grad: none; --surface: #fff; --surface-solid: #fff;
+    --border: #cfd8d4; --border-strong: #9fb0a9;
+    --text: #000; --muted: #2c3a35; --faint: #4d5c56;
+    --primary: #047857; --secondary: #0e7490;
+    --primary-soft: #eaf6f1; --secondary-soft: #e8f5f8;
+    --shadow: none; --grad: linear-gradient(120deg, #047857, #0e7490);
+  }
+  nav, #bg-canvas, body::before, .cta-row, .tl-expand, .acc-ic,
+  .filters, .back, .vnav, .vbar, .thumbs, .nb-toolbar, .vclose, .vfull-count { display: none !important; }
+  * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; }
+  /* il testo a gradiente e' uno sfondo ritagliato: senza "grafica di sfondo"
+     in stampa sparirebbe */
+  .grad { background: none !important; -webkit-text-fill-color: currentColor !important; color: var(--primary); }
+  .hero { padding: 0 0 24px; }
+  .page-head { padding: 0 0 8px; }
+  section { padding: 16px 0; }
+  .sec-head { margin-bottom: 16px; }
+  .tl, .skill, .lang, .ccard, .about-card, .proj-card, .nb-cell, .nb-fig { break-inside: avoid; }
+  .sec-head, .subhead { break-after: avoid; }
+  footer { margin-top: 16px; padding: 14px 0; }
 }

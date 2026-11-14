@@ -165,6 +165,7 @@
     prev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>',
     next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>',
     full: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M16 21h3a2 2 0 0 0 2-2v-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
     nb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l4-6-4-6M8 6l-4 6 4 6"/></svg>',
     dl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>'
@@ -211,7 +212,8 @@
     filterRow.innerHTML = FILTERS.map(f => {
       const n = f.key === 'all' ? PROJECTS.length : PROJECTS.filter(p => p.kind === f.key).length;
       if (!n) return '';
-      return '<button class="filter' + (f.key === active ? ' on' : '') + '" data-k="' + f.key + '">'
+      return '<button class="filter' + (f.key === active ? ' on' : '') + '" data-k="' + f.key
+           + '" aria-pressed="' + (f.key === active) + '">'
            + esc(f.label) + ' · ' + n + '</button>';
     }).join('');
     filterRow.querySelectorAll('.filter').forEach(b => {
@@ -230,7 +232,9 @@
         ? '<span class="proj-count">' + ICONS.slides + p.slides.count + ' slide</span>'
         : p.notebook ? '<span class="proj-count">' + ICONS.nb + 'notebook</span>'
         : (p.docs ? '<span class="proj-count">' + ICONS.doc + 'PDF</span>' : '');
-      return '<button class="proj-card" data-id="' + p.id + '">'
+      // Un link e non un pulsante: e' una navigazione, e cosi' la scheda si
+      // apre anche in una nuova scheda o con il tasto centrale.
+      return '<a class="proj-card" href="#' + p.id + '" data-id="' + p.id + '">'
            + '<div class="proj-top"><div class="proj-ic">' + p.icon + '</div>'
            + '<div><div class="proj-kind">' + esc(p.kindLabel)
            + (p.period ? ' \u00b7 ' + esc(p.period) : '') + '</div>'
@@ -241,11 +245,8 @@
            + '<div class="proj-foot"><span class="proj-info">' + badge
            + '<span class="proj-count">' + ICONS.clock + readingMinutes(p) + ' min</span></span>'
            + '<span class="proj-open">apri <span class="ar">→</span></span></div>'
-           + '</button>';
+           + '</a>';
     }).join('');
-    grid.querySelectorAll('.proj-card').forEach(c => {
-      c.addEventListener('click', () => { location.hash = c.dataset.id; });
-    });
   }
 
   /* ── dettaglio ──────────────────────────────────────────────────────── */
@@ -266,6 +267,8 @@
       + '    <img id="slideImg" alt="">'
       + '    <button class="vnav prev" id="vPrev" aria-label="Slide precedente">' + ICONS.prev + '</button>'
       + '    <button class="vnav next" id="vNext" aria-label="Slide successiva">' + ICONS.next + '</button>'
+      + '    <span class="vfull-count" id="vFullCount" aria-hidden="true"></span>'
+      + '    <button class="vclose" id="vClose" aria-label="Esci dallo schermo intero">' + ICONS.close + '</button>'
       + '  </div>'
       + '  <div class="vbar">'
       + '    <span class="vcount"><b id="vNow">1</b> / ' + p.slides.count + '</span>'
@@ -299,7 +302,7 @@
       + (docs ? '<div class="doc-row">' + docs + '</div>' : '') + '</div>'
       + view + nbBlock;
 
-    detail.querySelector('#backBtn').addEventListener('click', () => { location.hash = ''; });
+    detail.querySelector('#backBtn').addEventListener('click', goList);
     if (p.slides) initViewer(p);
     if (p.notebook) initNotebook(p);
   }
@@ -354,6 +357,7 @@
       img.src = slidePath(p, i);
       img.alt = 'Slide ' + (i + 1) + ' di ' + n + ' - ' + p.title;
       now.textContent = i + 1;
+      fullCount.textContent = (i + 1) + ' / ' + n;
       prog.style.width = ((i + 1) / n * 100) + '%';
       prev.disabled = i === 0;
       next.disabled = i === n - 1;
@@ -365,52 +369,144 @@
 
     prev.addEventListener('click', () => show(i - 1));
     next.addEventListener('click', () => show(i + 1));
-    detail.querySelector('#vFull').addEventListener('click', () => {
-      if (document.fullscreenElement) document.exitFullscreen();
-      else if (stage.requestFullscreen) stage.requestFullscreen();
-    });
+    // Schermo intero in due strati. Il primo e' CSS: lo stage si allarga a
+    // tutta la finestra, e funziona ovunque. Il secondo e' l'API del browser,
+    // che toglie anche le barre, ma non sempre c'e' (su iPhone manca) e puo'
+    // essere rifiutata (pagine incorporate, anteprime): prima il pulsante si
+    // affidava solo a quella e, dove mancava, non succedeva nulla.
+    const fullBtn = detail.querySelector('#vFull');
+    const closeBtn = detail.querySelector('#vClose');
+    const fullCount = detail.querySelector('#vFullCount');
+    const enterNative = stage.requestFullscreen || stage.webkitRequestFullscreen;
+    let full = false;
 
-    // swipe su touch
-    let x0 = null;
-    stage.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    function setFull(on) {
+      if (full === on) return;
+      full = on;
+      stage.classList.toggle('full', on);
+      document.documentElement.classList.toggle('viewer-full', on);
+      if (on) {
+        if (enterNative) {
+          try {
+            const req = enterNative.call(stage);
+            if (req && req.catch) req.catch(() => {});   // rifiutata: resta lo strato CSS
+          } catch (e) {}
+        }
+        closeBtn.focus({ preventScroll: true });
+      } else {
+        if (fullscreenEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        fullBtn.focus({ preventScroll: true });
+      }
+    }
+    fullBtn.addEventListener('click', () => setFull(true));
+    closeBtn.addEventListener('click', () => setFull(false));
+
+    // Su un telefono in verticale la slide a schermo intero viene ruotata di
+    // 90 gradi per usare tutto lo schermo (lo fa il CSS): lo swipe allora
+    // segue il lato lungo, cioe' l'asse verticale.
+    const sideways = matchMedia('(orientation: portrait) and (max-width: 720px)');
+    let x0 = null, y0 = null;
+    stage.addEventListener('touchstart', e => {
+      // due dita sono uno zoom, non uno swipe
+      if (e.touches.length > 1) { x0 = null; return; }
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    }, { passive: true });
     stage.addEventListener('touchend', e => {
       if (x0 === null) return;
       const dx = e.changedTouches[0].clientX - x0;
-      if (Math.abs(dx) > 45) show(i + (dx < 0 ? 1 : -1));
+      const dy = e.changedTouches[0].clientY - y0;
       x0 = null;
+      // con la pagina ingrandita il trascinamento serve a spostarsi nella slide
+      if (window.visualViewport && visualViewport.scale > 1.01) return;
+      const turned = full && sideways.matches;
+      const along = turned ? dy : dx, across = turned ? dx : dy;
+      // conta solo un gesto deciso lungo l'asse giusto: uno scorrimento della
+      // pagina appena storto non deve cambiare slide
+      if (Math.abs(along) > 45 && Math.abs(along) > Math.abs(across)) show(i + (along < 0 ? 1 : -1));
     }, { passive: true });
 
-    viewer = { show: show, get i() { return i; }, n: n };
+    viewer = { show: show, get i() { return i; }, n: n, setFull: setFull, get full() { return full; } };
     show(0);
   }
 
   /* ── routing con hash ───────────────────────────────────────────────── */
+  const fullscreenEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+
+  let listScroll = 0;      // dov'era l'elenco quando si e' aperto un progetto
+  let lastOpened = null;   // per restituire il focus alla scheda giusta
+  let firstRoute = true;
+
+  // Conta l'apertura di un progetto come pagina vista. Il cambio di hash non
+  // e' una navigazione per lo script di statistiche, quindi va detto a mano.
+  // Al primo caricamento la pagina e' gia' stata contata.
+  function track(p) {
+    try {
+      if (window.umami && typeof umami.track === 'function') {
+        const url = location.pathname + '#' + p.id;
+        umami.track(props => Object.assign({}, props, { url: url, title: document.title }));
+      }
+    } catch (e) {}
+  }
+
+  // pushState e non location.hash = '': quello lasciava un "#" appeso all'URL.
+  function goList() {
+    history.pushState(null, '', location.pathname + location.search);
+    route();
+  }
+
+  // Uscendo dallo schermo intero del browser (Esc, gesto di sistema) si
+  // chiude anche lo strato CSS, altrimenti resterebbe la slide a tutta finestra.
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => {
+    document.addEventListener(ev, () => {
+      if (viewer && viewer.full && !fullscreenEl()) viewer.setFull(false);
+    });
+  });
+
   function route() {
+    if (viewer && viewer.full) viewer.setFull(false);
     const id = location.hash.replace(/^#/, '');
     const p = PROJECTS.find(x => x.id === id);
+    const wasOpen = detail.classList.contains('on');
     if (p) {
+      if (!wasOpen) listScroll = scrollY;
+      lastOpened = p.id;
       renderDetail(p);
       detail.classList.add('on');
       listView.style.display = 'none';
       document.title = p.title + ' - Damiano Catasta';
-      window.scrollTo({ top: 0, behavior: 'auto' });
+      // 'instant': con 'auto' vale lo scroll-behavior del CSS, che e' smooth
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      // il contenuto e' cambiato sotto il cursore: il focus va sul nuovo
+      // titolo, altrimenti resta sul pulsante appena rimosso e si perde
+      const h = detail.querySelector('h2');
+      if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
+      if (!firstRoute) track(p);
     } else {
       viewer = null;
       detail.classList.remove('on');
       detail.innerHTML = '';
       listView.style.display = '';
       document.title = 'Progetti - Damiano Catasta';
+      if (wasOpen) {
+        window.scrollTo({ top: listScroll, behavior: 'instant' });
+        const card = lastOpened && grid.querySelector('[data-id="' + lastOpened + '"]');
+        if (card) card.focus({ preventScroll: true });
+      }
     }
+    firstRoute = false;
   }
 
+  // Solo le frecce: Home e Fine restano alla pagina, che su un progetto lungo
+  // servono per scorrere.
   addEventListener('keydown', e => {
     if (viewer) {
       if (e.key === 'ArrowLeft') { e.preventDefault(); viewer.show(viewer.i - 1); return; }
       if (e.key === 'ArrowRight') { e.preventDefault(); viewer.show(viewer.i + 1); return; }
-      if (e.key === 'Home') { e.preventDefault(); viewer.show(0); return; }
-      if (e.key === 'End') { e.preventDefault(); viewer.show(viewer.n - 1); return; }
     }
-    if (e.key === 'Escape' && !document.fullscreenElement && location.hash) location.hash = '';
+    if (e.key !== 'Escape') return;
+    // il primo Esc chiude lo schermo intero, il secondo torna all'elenco
+    if (viewer && viewer.full) { viewer.setFull(false); return; }
+    if (!fullscreenEl() && location.hash) goList();
   });
 
   addEventListener('hashchange', route);
